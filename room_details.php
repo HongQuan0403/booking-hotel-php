@@ -8,7 +8,7 @@
     <meta content name="keywords">
     <meta content name="description">
 
-    <?php require('shares/links.php'); ?>
+    <?php require 'shares/links.php'; ?>
     <style>
         .custom-bg {
             background-color: #86B817;
@@ -79,12 +79,13 @@
 
 <body>
 
-    <?php require('shares/header.php'); ?>
+    <?php require 'shares/header.php'; ?>
     <?php
 
     if (!isset($_GET['id'])) {
         redirect('rooms.php');
     }
+    echo $_GET['id'];
 
     $data = filteration($_GET);
 
@@ -94,14 +95,6 @@
     }
     $room_data = mysqli_fetch_assoc($room_res);
     ?>
-
-    <!-- Spinner placeholder - would be connected to your existing spinner code -->
-    <div id="spinner" class="d-none">
-        <!-- Spinner content -->
-    </div>
-
-    
-
 
     <!-- Room Details Start -->
     <div class="container py-5">
@@ -262,7 +255,7 @@
                         $book_btn = "";
                         $login = 0;
                         if (!isset($setting_r['shutdown']) || !$setting_r['shutdown']) {
-                            $login = isset($_SESSION["login"]) && $_SESSION["login"] == true ? 1:0;
+                            $login = isset($_SESSION["login"]) && $_SESSION["login"] == true ? 1 : 0;
                             $book_btn = "<button class='btn btn-primary py-3 rounded-pill fw-bold' onClick='checkLoginToBook($login, {$room_data['id']})'><i class='fas fa-check-circle me-2'></i>Xác nhận đặt phòng</button>";
                         }
                         echo $book_btn;
@@ -276,7 +269,6 @@
                     <!-- Room Amenities Card -->
                     <?php
 
-                    // Fetch facilities
                     $fac_q = mysqli_query(
                         $conn,
                         "SELECT f.icon, f.name FROM `facilities` f 
@@ -292,7 +284,6 @@
                         </span>";
                     }
 
-                    // Render HTML
                     echo <<<HTML
                         <div class="facilities-section mt-3">
                             <h6 class="mb-3 text-primary fs-3 px-4"><i class="bi bi-tools me-2"></i>Facilities</h6>
@@ -320,7 +311,7 @@
                             </div>
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-envelope-fill fs-5 text-primary me-2"></i>
-                                <a href="mailto:info@example.com" class="text-dark">booking@tourist.com</a>
+                                <a href="mailto:info@example.com" class="text-dark">letmecook04@mail.com</a>
                             </div>
                         </div>
                     </div>
@@ -386,4 +377,4 @@
                 </div>
             </div>
         </div>
-        <?php require'shares/footer.php'?>
+        <?php require 'shares/footer.php' ?>

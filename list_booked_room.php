@@ -83,7 +83,7 @@
 
     <div class="container">
         <div id="rooms-list" class="row g-4">
-            <!-- Dữ liệu phòng sẽ được tải ở đây -->
+            <!-- Data -->
         </div>
 
         <div class="text-center mt-4 mb-5">
@@ -104,10 +104,10 @@
                     data: { page: page },
                     dataType: 'json',
                     success: function (response) {
-                        console.log(response);  // In ra phản hồi từ server để kiểm tra
+                        console.log(response);
                         if (response.success && response.rooms.length > 0) {
                             response.rooms.forEach(room => {
-                                // Xử lý dữ liệu features để hiển thị với icons
+
                                 let featuresArray = room.features.split(',').map(feature => feature.trim());
                                 let featuresHTML = featuresArray.map(feature =>
                                     `<div class="feature-item">
@@ -116,7 +116,7 @@
                                     </div>`
                                 ).join('');
 
-                                // Xử lý dữ liệu facilities để hiển thị với icons
+
                                 let facilitiesArray = room.facilities.split(',').map(facility => facility.trim());
                                 let facilitiesHTML = facilitiesArray.map(facility =>
                                     `<div class="facility-item">
@@ -176,10 +176,8 @@
                 });
             }
 
-            // Tải dữ liệu khi trang load
             loadBookedRooms(page);
 
-            // Khi người dùng bấm "Xem thêm"
             $('#loadMore').click(function () {
                 $(this).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...');
                 page++;

@@ -6,7 +6,6 @@ require 'admin/database/db_config.php';
 if (isset($_SESSION['uId'])) {
     $user_id = $_SESSION['uId'];
 
-    // Truy vấn lấy thông tin người dùng
     $stmt = $conn->prepare("SELECT name, email, phonenum FROM user_cred WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -14,7 +13,6 @@ if (isset($_SESSION['uId'])) {
     $user_data = $result->fetch_assoc();
 }
 
-// Get room information
 $room_data = null;
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
@@ -28,7 +26,6 @@ if (isset($_GET['id'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['note'] = isset($_POST['note']) ? trim($_POST['note']) : '';
     $_SESSION['id_room'] = isset($_POST['id_room']) ? trim($_POST['id_room']) : '';
-    // Lưu check-in và check-out vào session
     $_SESSION['check_in'] = isset($_POST['checkIn']) ? trim($_POST['checkIn']) : '';
     $_SESSION['check_out'] = isset($_POST['checkOut']) ? trim($_POST['checkOut']) : '';
 }
@@ -67,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="text" class="form-control" id="fullName" name="customer_name"
                                 placeholder="Họ và tên"
                                 value="<?= isset($user_data['name']) ? htmlspecialchars($user_data['name']) : '' ?>"
-                                required>
+                                required readonly>
                             <label for="fullName"><i class="fas fa-user me-2"></i>Họ và tên</label>
                         </div>
 
@@ -76,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="text" class="form-control" id="phone" name="customer_phone"
                                 placeholder="Số điện thoại"
                                 value="<?= isset($user_data['phonenum']) ? htmlspecialchars($user_data['phonenum']) : '' ?>"
-                                required>
+                                required readonly>
                             <label for="phone"><i class="fas fa-phone me-2"></i>Số điện thoại</label>
                         </div>
 
@@ -85,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="email" class="form-control" id="email" name="customer_email"
                                 placeholder="Email"
                                 value="<?= isset($user_data['email']) ? htmlspecialchars($user_data['email']) : '' ?>"
-                                required>
+                                required readonly>
                             <label for="email"><i class="fas fa-envelope me-2"></i>Email</label>
                         </div>
 
@@ -122,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                         <div class="form-floating mb-4">
                             <input type="text" class="form-control fs-2 text-primary"
-                                value="<?= htmlspecialchars($room_data['name']) ?>">
+                                value="<?= htmlspecialchars($room_data['name']) ?>" readonly>
                         </div>
 
                         <div class="form-floating mb-4">
@@ -143,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <input type="number" class="form-control" id="pricePerNight"
                                     value="<?= htmlspecialchars(intval($room_data['price'])) * 1000 ?>" readonly hidden>
                                 <input type="number" class="form-control" id="amount" name="amount" min="1" max="100000000"
-                                    value="0" required>
+                                    value="0" required readonly>
 
                                 <label for="amount"><i class="fas fa-money-bill-wave me-2"></i>Số tiền thanh toán
                                     (VND)</label>
@@ -158,8 +155,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="payment-methods mt-4">
                             <h5 class="mb-3">Phương thức thanh toán</h5>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" id="atmcard" name="bankCode"
-                                    value="VNBANK">
+                                <input class="form-check-input" type="radio" id="atmcard" name="bankCode" value="VNBANK"
+                                    checked>
                                 <label class="form-check-label fw-bold w-100" for="atmcard">
                                     <i class="fas fa-university text-warning me-2"></i>Thanh toán qua thẻ ATM/Tài
                                     khoản nội địa
@@ -193,7 +190,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 const checkInDate = new Date(checkIn.value);
                 const checkOutDate = new Date(checkOut.value);
 
-                if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (checkInDate < today) {
+                    checkIn.value = "";
+                    alert("Ngày nhận phòng phải từ ngày hiện tại trở đi");
+                    return;
+                } else if (checkOutDate < today) {
+                    checkOut.value = "";
+                    alert("Ngày trả phòng phải từ ngày hiện tại trở đi");
+                    return;
+                } else if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
                     const nights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
                     numNights.value = nights;
                     totalAmount.value = nights * parseFloat(pricePerNight.value);
