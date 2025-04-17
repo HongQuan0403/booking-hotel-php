@@ -79,13 +79,13 @@
 
 <body>
     <!-- Spinner Start -->
-    <!-- <div id="spinner"
+    <div id="spinner"
         class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
         <div class="spinner-border text-primary"
             style="width: 3rem; height: 3rem;" role="status">
             <span class="sr-only">Loading...</span>
         </div>
-    </div> -->
+    </div>
     <!-- Spinner End -->
 
     <!-- Navbar & Hero Start -->
@@ -142,201 +142,86 @@
                 <h6 class="section-title bg-white text-center text-primary px-3">Rooms</h6>
                 <h1 class="mb-5">Our Rooms</h1>
             </div>
-            <div class="row">
-                <div class="col-lg-4 col-md-6 my-3">
-                    <div class="card border-0 shadow" style="max-width: 300px; margin: auto;">
-                        <img src="img/rooms/1.jpg" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5>Simple Room Name</h5>
-                            <h6 class="mb-4">$200 per night</h6>
-                            <div class="features mb-4">
-                                <h6 class="mb-1">Features</h6>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    2 Rooms
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    1 Bathroms
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    1 Balcony
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    3 Sofa
-                                </span>
-                            </div>
-                            <div class="facilities mb-4">
-                                <h6 class="mb-1">Facilities</h6>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    Wifi
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    Television
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    AC
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    Room heater
-                                </span>
-                            </div>
-                            <div class="guests mb-4">
-                                <h6 class="mb-1">Guests</h6>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    2 Adults
-                                </span>
-                                <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                    1 Children
-                                </span>
-                            </div>
-                            <div class="rating mb-4">
-                                <h6 class="mb-1">Rating</h6>
-                                <span class="badge rounded-pill bg-light">
-                                    <i class="bi bi-star-fill text-warning"></i>
-                                    <i class="bi bi-star-fill text-warning"></i>
-                                    <i class="bi bi-star-fill text-warning"></i>
-                                    <i class="bi bi-star-fill text-warning"></i>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-evenly mb-2">
-                                <a href="#" class="btn btn-sm text-white custom-bg shadow-none">Book now</a>
-                                <a href="#" class="btn btn-sm btn-outline-dark shadow-none">More details</a>
+            <div class="container">
+                <div class="row">
+                    <?php
 
+                    $room_res = select("SELECT * FROM `rooms` WHERE `status` = ? AND `removed` = ? LIMIT 3", [1, 0], 'ii');
+                    while ($room_data = mysqli_fetch_assoc($room_res)) {
+
+                        // Fetch features
+                        $features_data = "";
+                        $fea_q = select("SELECT f.name FROM `features` f 
+    INNER JOIN `room_features` rfea ON f.id = rfea.features_id 
+    WHERE rfea.room_id = ?", [$room_data['id']], 'i');
+                        while ($fea_row = mysqli_fetch_assoc($fea_q)) {
+                            $features_data .= "<span class='badge rounded-pill bg-light text-dark text-wrap'>$fea_row[name]</span>";
+                        }
+
+                        // Fetch facilities
+                        $facilities_data = "";
+                        $fac_q = select("SELECT f.name FROM `facilities` f 
+    INNER JOIN `room_facilities` rfac ON f.id = rfac.facilities_id 
+    WHERE rfac.room_id = ?", [$room_data['id']], 'i');
+                        while ($fac_row = mysqli_fetch_assoc($fac_q)) {
+                            $facilities_data .= "<span class='badge rounded-pill bg-light text-dark text-wrap'>$fac_row[name]</span>";
+                        }
+
+                        // Fetch room thumbnail
+                        $room_thumb = ROOMS_IMG_PATH . "thumbnail.jpg";
+                        $thumb_q = select("SELECT * FROM `room_images` WHERE `room_id` = ? AND `thumb` = '1'", [$room_data['id']], 'i');
+                        if (mysqli_num_rows($thumb_q) > 0) {
+                            $thumb_res = mysqli_fetch_assoc($thumb_q);
+                            $room_thumb = ROOMS_IMG_PATH . $thumb_res['image'];
+                        }
+
+                        // Set the book button
+                        $book_btn = "";
+                        $login = 0;
+                        if (!isset($setting_r['shutdown']) || !$setting_r['shutdown']) {
+                            $login = isset($_SESSION["login"]) && $_SESSION["login"] == true ? 1:0;
+                            $book_btn = "<button class='btn btn-sm text-black custom-bg shadow-none btn-primary' onClick='checkLoginToBook($login, {$room_data['id']})'>Book now</button>";
+                        }
+                        echo <<<HTML
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow">
+                                    <img src="$room_thumb" class="img-fluid rounded" alt="Room Image">
+                                    <div class="card-body">
+                                        <h5>{$room_data['name']}</h5>
+                                        <h6 class="mb-4">\${$room_data['price']} per night</h6>
+                                        <div class="features mb-3">
+                                            <h6 class="mb-1">Features</h6>
+                                            $features_data
+                                        </div>
+                                        <div class="facilities mb-3">
+                                            <h6 class="mb-1">Facilities</h6>
+                                            $facilities_data
+                                        </div>
+                                        <div class="guests mb-3">
+                                            <h6 class="mb-1">Guests</h6>
+                                            <span class="badge rounded-pill bg-light text-dark text-wrap">{$room_data['adult']} Adults</span>
+                                            <span class="badge rounded-pill bg-light text-dark text-wrap">{$room_data['children']} Children</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-evenly mb-2">
+                                        $book_btn
+                                        <a href="room_details.php?id={$room_data['id']}" class="btn btn-sm btn-outline-dark shadow-none">More details</a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        HTML;
+                    }
+                    ?>
 
-                <div class="col-lg-4 col-md-6 my-3">
-                    <div class="card border-0 shadow" style="max-width: 300px; margin: auto;">
-                        <img src="img/rooms/1.jpg" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5>Simple Room Name</h5>
-                            <h6 class="mb-4">$200 per night</h5>
-                                <div class="features mb-4">
-                                    <h6 class="mb-1">Features</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        2 Rooms
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Bathroms
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Balcony
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        3 Sofa
-                                    </span>
-                                </div>
-                                <div class="facilities mb-4">
-                                    <h6 class="mb-1">Facilities</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Wifi
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Television
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        AC
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Room heater
-                                    </span>
-                                </div>
-                                <div class="guests mb-4">
-                                    <h6 class="mb-1">Guests</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        2 Adults
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Children
-                                    </span>
-                                </div>
-                                <div class="rating mb-4">
-                                    <h6 class="mb-1">Rating</h6>
-                                    <span class="badge rounded-pill bg-light">
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-evenly mb-2">
-                                    <a href="#" class="btn btn-sm text-white custom-bg shadow-none">Book now</a>
-                                    <a href="#" class="btn btn-sm btn-outline-dark shadow-none">More details</a>
-
-                                </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 my-3">
-                    <div class="card border-0 shadow" style="max-width: 300px; margin: auto;">
-                        <img src="img/rooms/1.jpg" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5>Simple Room Name</h5>
-                            <h6 class="mb-4">$200 per night</h5>
-                                <div class="features mb-4">
-                                    <h6 class="mb-1">Features</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        2 Rooms
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Bathroms
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Balcony
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        3 Sofa
-                                    </span>
-                                </div>
-                                <div class="facilities mb-4">
-                                    <h6 class="mb-1">Facilities</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Wifi
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Television
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        AC
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        Room heater
-                                    </span>
-                                </div>
-                                <div class="guests mb-4">
-                                    <h6 class="mb-1">Guests</h6>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        2 Adults
-                                    </span>
-                                    <span class="badge rounded-pill bg-light text-dark text-wrap">
-                                        1 Children
-                                    </span>
-                                </div>
-                                <div class="rating mb-4">
-                                    <h6 class="mb-1">Rating</h6>
-                                    <span class="badge rounded-pill bg-light">
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-evenly mb-2">
-                                    <a href="#" class="btn btn-sm text-white custom-bg shadow-none">Book now</a>
-                                    <a href="#" class="btn btn-sm btn-outline-dark shadow-none">More details</a>
-
-                                </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="col-lg-12 text-center mt-5">
-                    <a href="#" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+                    <a href="rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms
+                        >>></a>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Our Rooms End -->
 
     <!-- Our Services Start -->
@@ -429,17 +314,12 @@
     <div class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
         <div class="container">
             <div class="text-center">
-                <h6
-                    class="section-title bg-white text-center text-primary px-3">Testimonial</h6>
+                <h6 class="section-title bg-white text-center text-primary px-3">Testimonial</h6>
                 <h1 class="mb-5">Our Clients Say!!!</h1>
             </div>
-            <div
-                class="owl-carousel testimonial-carousel position-relative">
-                <div
-                    class="testimonial-item bg-white text-center border p-4">
-                    <img
-                        class="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-                        src="img/testimonial-1.jpg"
+            <div class="owl-carousel testimonial-carousel position-relative">
+                <div class="testimonial-item bg-white text-center border p-4">
+                    <img class="bg-white rounded-circle shadow p-1 mx-auto mb-3" src="img/testimonial-1.jpg"
                         style="width: 80px; height: 80px;">
                     <h5 class="mb-0">John Doe</h5>
                     <p>New York, USA</p>
@@ -447,11 +327,8 @@
                         dolor diam ipsum sit diam amet diam et eos. Clita
                         erat ipsum et lorem et sit.</p>
                 </div>
-                <div
-                    class="testimonial-item bg-white text-center border p-4">
-                    <img
-                        class="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-                        src="img/testimonial-2.jpg"
+                <div class="testimonial-item bg-white text-center border p-4">
+                    <img class="bg-white rounded-circle shadow p-1 mx-auto mb-3" src="img/testimonial-2.jpg"
                         style="width: 80px; height: 80px;">
                     <h5 class="mb-0">John Doe</h5>
                     <p>New York, USA</p>
@@ -459,11 +336,8 @@
                         Diam dolor diam ipsum sit diam amet diam et eos.
                         Clita erat ipsum et lorem et sit.</p>
                 </div>
-                <div
-                    class="testimonial-item bg-white text-center border p-4">
-                    <img
-                        class="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-                        src="img/testimonial-3.jpg"
+                <div class="testimonial-item bg-white text-center border p-4">
+                    <img class="bg-white rounded-circle shadow p-1 mx-auto mb-3" src="img/testimonial-3.jpg"
                         style="width: 80px; height: 80px;">
                     <h5 class="mb-0">John Doe</h5>
                     <p>New York, USA</p>
@@ -471,11 +345,8 @@
                         Diam dolor diam ipsum sit diam amet diam et eos.
                         Clita erat ipsum et lorem et sit.</p>
                 </div>
-                <div
-                    class="testimonial-item bg-white text-center border p-4">
-                    <img
-                        class="bg-white rounded-circle shadow p-1 mx-auto mb-3"
-                        src="img/testimonial-4.jpg"
+                <div class="testimonial-item bg-white text-center border p-4">
+                    <img class="bg-white rounded-circle shadow p-1 mx-auto mb-3" src="img/testimonial-4.jpg"
                         style="width: 80px; height: 80px;">
                     <h5 class="mb-0">John Doe</h5>
                     <p>New York, USA</p>
@@ -502,19 +373,16 @@
     <div class="container-xxl py-5">
         <div class="container">
             <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6
-                    class="section-title bg-white text-center text-primary px-3">Contact
+                <h6 class="section-title bg-white text-center text-primary px-3">Contact
                     Us</h6>
                 <h1 class="mb-5">Contact For Any Query</h1>
             </div>
             <div class="row g-4">
-                <div class="col-lg-4 col-md-6 wow fadeInUp"
-                    data-wow-delay="0.1s">
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                     <h5><?php echo $setting_r['site_title'] ?></h5>
                     <p class="mb-4"><?php echo $setting_r['site_about'] ?></p>
                     <div class="d-flex align-items-center mb-4">
-                        <div
-                            class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
                             style="width: 50px; height: 50px;">
                             <i class="fa fa-map-marker-alt text-white"></i>
                         </div>
@@ -524,8 +392,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center mb-4">
-                        <div
-                            class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
                             style="width: 50px; height: 50px;">
                             <i class="fa fa-phone-alt text-white"></i>
                         </div>
@@ -535,8 +402,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
-                        <div
-                            class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary"
                             style="width: 50px; height: 50px;">
                             <i class="fa fa-envelope-open text-white"></i>
                         </div>
@@ -546,51 +412,41 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6 wow fadeInUp"
-                    data-wow-delay="0.3s">
-                    <iframe class="position-relative rounded w-100 h-100"
-                        src="<?php echo $contact_r['iframe'] ?>"
-                        frameborder="0" style="min-height: 300px; border:0;"
-                        allowfullscreen aria-hidden="false"
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <iframe class="position-relative rounded w-100 h-100" src="<?php echo $contact_r['iframe'] ?>"
+                        frameborder="0" style="min-height: 300px; border:0;" allowfullscreen aria-hidden="false"
                         tabindex="0"></iframe>
                 </div>
-                <div class="col-lg-4 col-md-12 wow fadeInUp"
-                    data-wow-delay="0.5s">
+                <div class="col-lg-4 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
                     <form>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control"
-                                        id="name" placeholder="Your Name">
+                                    <input type="text" class="form-control" id="name" placeholder="Your Name">
                                     <label for="name">Your Name</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="email" class="form-control"
-                                        id="email" placeholder="Your Email">
+                                    <input type="email" class="form-control" id="email" placeholder="Your Email">
                                     <label for="email">Your Email</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control"
-                                        id="subject" placeholder="Subject">
+                                    <input type="text" class="form-control" id="subject" placeholder="Subject">
                                     <label for="subject">Subject</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <textarea class="form-control"
-                                        placeholder="Leave a message here"
-                                        id="message"
+                                    <textarea class="form-control" placeholder="Leave a message here" id="message"
                                         style="height: 100px"></textarea>
                                     <label for="message">Message</label>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <button class="btn btn-primary w-100 py-3"
-                                    type="submit">Send Message</button>
+                                <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
                             </div>
                         </div>
                     </form>
@@ -605,8 +461,7 @@
     <!-- Footer End -->
 
     <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
-            class="bi bi-arrow-up"></i></a>
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 
     <!-- JavaScript Libraries -->
     <?php require('shares/script.php') ?>

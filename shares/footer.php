@@ -1,6 +1,4 @@
-<div
-    class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn"
-    data-wow-delay="0.1s">
+<div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
     <div class="container py-5">
         <div class="row g-5">
             <?php
@@ -11,23 +9,13 @@
             <div class="col-lg-8 col-md-6">
                 <h4 class="text-white mb-3">Contact</h4>
                 <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i><?php echo $contact_r['address'] ?></p>
-                <p class="mb-2"><i
-                        class="fa fa-phone-alt me-3"></i>+<?php echo $contact_r['phone'] ?></p>
-                <p class="mb-2"><i
-                        class="fa fa-envelope me-3"></i><?php echo $contact_r['email'] ?></p>
+                <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+<?php echo $contact_r['phone'] ?></p>
+                <p class="mb-2"><i class="fa fa-envelope me-3"></i><?php echo $contact_r['email'] ?></p>
                 <div class="d-flex pt-2">
-                    <a class="btn btn-outline-light btn-social"
-                        href="#"><i
-                            class="fab fa-twitter"></i></a>
-                    <a class="btn btn-outline-light btn-social"
-                        href="#"><i
-                            class="fab fa-facebook-f"></i></a>
-                    <a class="btn btn-outline-light btn-social"
-                        href="#"><i
-                            class="fab fa-youtube"></i></a>
-                    <a class="btn btn-outline-light btn-social"
-                        href="#"><i
-                            class="fab fa-linkedin-in"></i></a>
+                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-twitter"></i></a>
+                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-youtube"></i></a>
+                    <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">
@@ -45,6 +33,12 @@
 
 <script>
     // Set the active class on the current page in the navbar
+    function closeModal(modalId) {
+        var modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+        if (modal) {
+            modal.hide(); // Ẩn modal trước
+        }
+    }
 
     function alert(type, msg, position = 'body') {
         let bs_class = (type == 'success') ? 'alert-success' : 'alert-danger';
@@ -67,118 +61,156 @@
         document.getElementsByClassName('custom-alert')[0].remove();
     }
 
-    function setActive() {
-        let navbar = document.getElementById('dashboard-menu');
-        let a_tags = navbar.getElementsByTagName('a');
+    // function setActive() {
+    //     let navbar = document.getElementById('dashboard-menu');
+    //     let a_tags = navbar.getElementsByTagName('a');
 
-        for (i = 0; i < a_tags.length; i++) {
-            let file = a_tags[i].href.split('/').pop();
-            let file_name = file.split('.')[0];
+    //     for (i = 0; i < a_tags.length; i++) {
+    //         let file = a_tags[i].href.split('/').pop();
+    //         let file_name = file.split('.')[0];
 
-            if (document.location.href.indexOf(file) != -1) {
-                a_tags[i].classList.add('active');
-            }
+    //         if (document.location.href.indexOf(file) != -1) {
+    //             a_tags[i].classList.add('active');
+    //         }
+    //     }
+    // }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let registerForm = document.getElementById("register_form");
+
+        registerForm.addEventListener("submit", function(e) {
+            e.preventDefault(); // Ngăn chặn form gửi đi mặc định
+
+            let formData = new FormData(registerForm); // Lấy dữ liệu từ form
+            formData.append("register", "");
+
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "ajax/login_regester.php", true);
+            xhr.onload = function() {
+                let response = this.responseText.trim(); // Lấy phản hồi từ server
+
+                if (response === "pass_mismatch") {
+                    alert("Mật khẩu không khớp!");
+                } else if (response === "email_already") {
+                    alert("Email đã tồn tại!");
+                } else if (response === "phonenum_already") {
+                    alert("Số điện thoại đã đăng ký!");
+                } else if (response === "mail_failed") {
+                    alert("Gửi email xác nhận thất bại!");
+                } else if (response === "ins_failed") {
+                    alert("Lỗi khi đăng ký!");
+                } else if (response === "1") {
+                    alert("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
+                    registerForm.reset(); // Xóa nội dung form sau khi đăng ký thành công
+                } else {
+                    alert("Lỗi không xác định!");
+                }
+            };
+
+            xhr.send(formData); // Gửi dữ liệu qua AJAX
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let loginForm = document.getElementById("login_form");
+
+        loginForm.addEventListener("submit", function(e) {
+            e.preventDefault(); // Ngăn chặn form gửi đi mặc định
+
+            let formData = new FormData(loginForm); // Lấy dữ liệu từ form
+            formData.append("login", "1"); // Thêm key để xác định đăng ký
+
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "ajax/login_regester.php", true);
+            xhr.onload = function() {
+                let response = this.responseText.trim(); // Lấy phản hồi từ server
+                if (response == "1") {
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert("Lỗi không xác định!");
+                }
+            };
+            xhr.send(formData); // Gửi dữ liệu qua AJAX
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let forgot_form = document.getElementById("forgotPasswordForm");
+
+        forgot_form.addEventListener("submit", function(e) {
+            e.preventDefault(); // Ngăn chặn form gửi đi mặc định
+
+            let formData = new FormData(forgot_form); // Lấy dữ liệu từ form
+            formData.append("forgot_pass", ""); // Thêm key để xác định đăng ký
+
+            closeModal('forgotPasswordModal');
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                backdrop.remove();
+            });
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "ajax/login_regester.php", true);
+            xhr.onload = function() {
+                let response = this.responseText.trim(); // Lấy phản hồi từ server
+                if (response === "1") {
+                    console.log("thành công:", response);
+                    sessionStorage.setItem('forgotEmail', forgot_form.elements["email"].value);
+                    let newModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+                    newModal.show(); // Mở modal mới
+                } else {
+                    console.log(response);
+                }
+            };
+
+            xhr.send(formData); // Gửi dữ liệu qua AJAX
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let change_form = document.getElementById("changePasswordForm");
+
+
+        change_form.addEventListener("submit", function(e) {
+            e.preventDefault(); // Ngăn chặn form gửi đi mặc định
+
+            let email = sessionStorage.getItem('forgotEmail');
+            let emailField = document.getElementById('resetEmail'); 
+            emailField.value = email;
+            
+            let formData = new FormData(change_form); // Lấy dữ liệu từ form
+            formData.append("recovery_user", ""); // Thêm key để xác định đăng ký
+
+            closeModal('changePasswordModal');
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                backdrop.remove();
+            });
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "ajax/login_regester.php", true);
+            xhr.onload = function() {
+                let response = this.responseText.trim(); // Lấy phản hồi từ server
+                if (response === "1") {} else {
+                    sessionStorage.removeItem('forgotEmail');
+                    console.log(response);
+                }
+            };
+
+            xhr.send(formData); // Gửi dữ liệu qua AJAX
+        });
+    });
+
+    // let forgot_form = document.getElementById('forgotPasswordModal');
+    function checkLoginToBook(isLoggedIn, roomId) {
+        if (!isLoggedIn) {
+            var loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
+            loginModal.show();
+            alert('error', 'Please login to booking');
+            console.log('chưa login');
+        } else {
+            window.location.href = `confirm_booking.php?id=${roomId}`;
         }
     }
-
-    let register_form = document.getElementById('register_form');
-
-    document.getElementById("register_form").addEventListener("submit", function(e) {
-        e.preventDefault(); // Ngăn chặn reload trang
-
-        let formData = new FormData(this);
-
-        fetch("/booking-hotel-php/shares/header.php", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data); // Xem kết quả server trả về
-
-                if (data.trim() === "1") {
-                    alert("Đăng ký thành công!");
-                    location.reload(); // Reload trang sau khi đăng ký thành công
-                } else {
-                    alert("Lỗi: " + data);
-                }
-            })
-            .catch(error => console.error("Error:", error));
-    });
-
-
-    let login_form = document.getElementById('login_form');
-
-    login_form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        let data = new FormData();
-
-        data.append('email_mob', login_form.elements['email_mob'].value);
-        data.append('pass', login_form.elements['pass'].value);
-        data.append('login', '');
-
-
-        var Model = document.getElementById('loginModal');
-        var modal = bootstrap.Modal.getInstance(Model);
-        modal.hide();
-
-        let xhr = new XMLHttpRequest();
-        xhr.open('POST', "ajax/login_regester.php", true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = function() {
-            if (this.responseText == 'inv_email_mob') {
-                alert('error', 'Invalid Email or Mobile Number!');
-            } else if (this.responseText == 'not_verified') {
-                alert('error', 'Email is not verified');
-            } else if (this.responseText == 'inactive') {
-                alert('error', 'Account Suspended! Please contact admin');
-            } else if (this.responseText == 'invalid_pass') {
-                alert('error', 'Incorrect Password');
-            } else {
-                window.location = window.location.pathname;
-            }
-        }
-
-        xhr.send(data);
-    });
-
-    let forgot_form = document.getElementById('forgot_form');
-
-    forgot_form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        let data = new FormData();
-
-        data.append('email', forgot_form.elements['email'].value);
-        data.append('forgot_pass', '');
-
-
-        var Model = document.getElementById('forgotModal');
-        var modal = bootstrap.Modal.getInstance(Model);
-        modal.hide();
-
-        let xhr = new XMLHttpRequest();
-        xhr.open('POST', "ajax/login_regester.php", true);
-
-        xhr.onload = function() {
-            if (this.responseText == 'inv_email') {
-                alert('error', 'Invalid Email !');
-            } else if (this.responseText == 'not_verified') {
-                alert('error', 'Email is not verified! Please contact Admin');
-            } else if (this.responseText == 'inactive') {
-                alert('error', 'Account Suspended! Please contact admin');
-            } else if (this.responseText == 'mail_failed') {
-                alert('error', 'Cannot send email. Sever down!');
-            } else if (this.responseText == 'mail_failed') {
-                alert('error', 'Account recover failed. Sever down!');
-            } else {
-                alert('success', 'Reset link sent to email!');
-                forgot_form.reset();
-            }
-        }
-
-        xhr.send(data);
-    });
-
-    setActive();
+    
 </script>
